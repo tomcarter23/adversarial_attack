@@ -23,3 +23,8 @@ def test_get_model_categories_valid_model(mock_model, mock_weight):
     mock_weight.DEFAULT = MagicMock(meta={"categories": ["dog"]})
     categories = get_model_categories("resnet18")
     assert categories == ["dog"]
+
+
+def test_get_model_categories_not_found_raises():
+    with pytest.raises(ValueError):
+        _ = get_model_categories(model_name="not_found")
