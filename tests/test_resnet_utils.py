@@ -2,7 +2,6 @@ import pytest
 import torch
 import numpy as np
 from PIL import Image
-from pathlib import Path
 
 from adversarial_attack.resnet_utils import load_image, preprocess_image, to_array, category_to_tensor
 
