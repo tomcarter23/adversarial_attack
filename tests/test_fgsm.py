@@ -1,7 +1,7 @@
 import pytest
 import torch
 import torch.nn as nn
-from adversarial_attack.fgsm import compute_gradient, attack
+from adversarial_attack.fgsm import compute_gradient, standard_attack
 
 
 # Define a simple mock model for testing
@@ -37,13 +37,13 @@ def test_compute_gradient(model, inputs_and_targets):
     assert grad.shape == inputs.shape, "Gradient should match input shape."
 
 
-def test_attack_success(model):
+def test_standard_attack_success(model):
     tensor = torch.tensor([[1.0, 0.0]])
-    target = torch.tensor([0])
+    truth = torch.tensor([0])
     epsilon = 0.1
     max_iter = 50
 
-    result = attack(model=model, tensor=tensor, target=target, epsilon=epsilon, max_iter=max_iter)
+    result = standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter)
 
     assert result is not None, "Attack should succeed."
     adv_tensor, orig_pred, new_pred = result
@@ -52,20 +52,20 @@ def test_attack_success(model):
 
 def test_attack_failure(model):
     tensor = torch.tensor([[1.0, 0.0]])
-    target = torch.tensor([1])  # Intentionally mismatched target
+    truth = torch.tensor([1])  # Intentionally mismatched target
     epsilon = 0.1
     max_iter = 50
 
     with pytest.raises(ValueError, match="does not match true class"):
-        attack(model=model, tensor=tensor, target=target, epsilon=epsilon, max_iter=max_iter)
+        standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter)
 
 
 def test_attack_no_change(model):
     tensor = torch.tensor([[1.0, 0.0]])
-    target = torch.tensor([0])
+    truth = torch.tensor([0])
     epsilon = 1e-6  # Very small perturbation
     max_iter = 5  # Insufficient iterations to succeed
 
-    result = attack(model=model, tensor=tensor, target=target, epsilon=epsilon, max_iter=max_iter)
+    result = standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter)
 
     assert result is None, "Attack should fail if epsilon is too small or max_iter is insufficient."
