@@ -1,4 +1,7 @@
 import argparse
+import sys
+
+import torch.nn
 from PIL import Image
 import numpy as np
 
@@ -11,7 +14,7 @@ from .resnet_utils import (
     preprocess_image,
     to_array,
 )
-from .fgsm import attack
+from .fgsm import get_attack_fn
 
 
 def main():
@@ -25,6 +28,12 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--mode",
+        default="targeted",
+        help=f"Mode of attack. Options: standard, targeted. Default: targeted.",
+        required=False,
+    )
+    parser.add_argument(
         "--image",
         "-i",
         help="Path to the image to attack.",
@@ -35,6 +44,12 @@ def main():
         "-c",
         help="String representing the true category of the image.",
         required=True,
+    )
+    parser.add_argument(
+        "--category-target",
+        "-ct",
+        help="String representing the true category of the image.",
+        required="targeted" in sys.argv,  # required only for targeted attacks
     )
     parser.add_argument(
         "--epsilon",
@@ -65,19 +80,24 @@ def main():
     image = load_image(args.image)
     image_tensor = preprocess_image(image)
 
-    categories = get_model_categories(model_name=args.model)
-
-    target = category_to_tensor(args.category_truth, categories)
-
-    results = attack(
-        model, tensor=image_tensor, target=target, epsilon=args.epsilon, max_iter=int(args.max_iterations)
+    categories = get_model_categories(args.model)
+    attack_fn = get_attack_fn(
+        mode=args.mode,
+        model=model,
+        tensor=image_tensor,
+        category_truth=args.category_truth,
+        category_target=args.category_target,
+        categories=categories,
+        epsilon=args.epsilon,
+        max_iter=int(args.max_iterations),
     )
+    results = attack_fn()
 
     if results is not None:
         new_image, orig_pred, new_pred = results
         print("Adversarial attack succeeded!")
-        print(f"Original Prediction: {orig_pred.argmax().item()}")
-        print(f"New Prediction: {new_pred.item()}")
+        print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
+        print(f"New Prediction: {categories[new_pred.item()]}")
         if args.output is not None:
             Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
     else:
