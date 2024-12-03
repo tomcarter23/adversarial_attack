@@ -26,7 +26,7 @@ def load_model_default_weights(model_name: str):
     return getattr(models, model_name)(weights=weights)
 
 
-def get_model_categories(model_name) -> list[str]:
+def get_model_categories(model_name: str) -> list[str]:
     """
     Get the categories of models available.
 
