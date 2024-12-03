@@ -46,7 +46,7 @@ def attack(
         max_iter (int): Maximum number of iterations to perform.
 
     Returns:
-        torch.Tensor: Adversarial image tensor.
+        torch.Tensor: Adversarial image tensor or None if attack failed.
     """
     with torch.no_grad():
         orig_pred = model(tensor)

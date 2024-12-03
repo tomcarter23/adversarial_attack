@@ -69,16 +69,19 @@ def main():
 
     target = category_to_tensor(args.category_truth, categories)
 
-    new_image, old_pred, new_pred = attack(
+    results = attack(
         model, tensor=image_tensor, target=target, epsilon=args.epsilon, max_iter=int(args.max_iterations)
     )
 
-    print(f"orig_category {args.category_truth}")
-    print(f"new_category {categories[new_pred.item()]}")
-
-    print(to_array(new_image).shape)
-    if args.output is not None:
-        Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
+    if results is not None:
+        new_image, orig_pred, new_pred = results
+        print("Adversarial attack succeeded!")
+        print(f"Original Prediction: {orig_pred.argmax().item()}")
+        print(f"New Prediction: {new_pred.item()}")
+        if args.output is not None:
+            Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
+    else:
+        print("Adversarial attack failed. Won't save image if output path is provided.")
 
 
 if __name__ == "__main__":
