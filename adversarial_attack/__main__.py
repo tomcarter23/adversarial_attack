@@ -1,42 +1,17 @@
 import argparse
-import torchvision.models as models
+from PIL import Image
+import numpy as np
 
-
-AVAILABLE_MODELS = {
-    "resnet50": "ResNet50_Weights",
-    "resnet101": "ResNet101_Weights",
-    "resnet152": "ResNet152_Weights",
-}
-
-
-def load_model_default_weights(model_name: str):
-    """
-    Load a model from a given GitHub repository.
-
-    Args:
-        model_name (str): Name of the model to load.
-
-    Returns:
-        torch.Model: Loaded PyTorch model.
-    """
-    if model_name not in AVAILABLE_MODELS:
-        raise ValueError(f"Model {model_name} not found.")
-
-    weights = getattr(models, AVAILABLE_MODELS[model_name]).DEFAULT
-    return getattr(models, model_name)(weights=weights)
-
-
-def get_model_categories(model_name: str) -> list[str]:
-    """
-    Get the categories of models available.
-
-    Returns:
-        list[str]: List of model categories.
-    """
-    if model_name not in AVAILABLE_MODELS:
-        raise ValueError(f"Model {model_name} not found.")
-
-    return getattr(models, AVAILABLE_MODELS[model_name]).DEFAULT.meta["categories"]
+from .resnet_utils import (
+    AVAILABLE_MODELS,
+    load_model_default_weights,
+    get_model_categories,
+    category_to_tensor,
+    load_image,
+    preprocess_image,
+    to_array,
+)
+from .fgsm import attack
 
 
 def main():
@@ -46,7 +21,7 @@ def main():
     parser.add_argument(
         "--model",
         "-m",
-        help="Path to the PyTorch model to attack.",
+        help=f"Name of the PyTorch model to attack. Available models: {AVAILABLE_MODELS.keys()}",
         required=True,
     )
     parser.add_argument(
@@ -56,22 +31,57 @@ def main():
         required=False,
     )
     parser.add_argument(
-        "--output",
-        "-o",
-        help="Path to save the adversarial image.",
+        "--category-truth",
+        "-c",
+        help="String representing the true category of the image.",
+        required=True,
+    )
+    parser.add_argument(
+        "--epsilon",
+        "-eps",
+        default=1.0e-3,
+        help="Epsilon value for the FGSM attack.",
         required=False,
     )
     parser.add_argument(
-        "--repo",
-        help="Repo to load model from.",
-        default="pytorch/vision",
+        "--max-iterations",
+        "-it",
+        default=50,
+        help="Maximum number of iterations for the FGSM attack.",
+        required=False,
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        help="Path to save the adversarial image.",
         required=False,
     )
 
     args = parser.parse_args()
 
     model = load_model_default_weights(model_name=args.model)
-    print(get_model_categories(model_name=args.model))
+    model.eval()  # IMPORTANT: set model to evaluation mode
+
+    image = load_image(args.image)
+    image_tensor = preprocess_image(image)
+
+    categories = get_model_categories(model_name=args.model)
+
+    target = category_to_tensor(args.category_truth, categories)
+
+    results = attack(
+        model, tensor=image_tensor, target=target, epsilon=args.epsilon, max_iter=int(args.max_iterations)
+    )
+
+    if results is not None:
+        new_image, orig_pred, new_pred = results
+        print("Adversarial attack succeeded!")
+        print(f"Original Prediction: {orig_pred.argmax().item()}")
+        print(f"New Prediction: {new_pred.item()}")
+        if args.output is not None:
+            Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
+    else:
+        print("Adversarial attack failed. Won't save image if output path is provided.")
 
 
 if __name__ == "__main__":

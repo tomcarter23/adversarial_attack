@@ -33,7 +33,7 @@ def attack(
     tensor: torch.Tensor,
     target: torch.Tensor,
     epsilon: float = 1e-3,
-    max_iter: int = 100,
+    max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
     """
     Perform a classic FGSM attack on a PyTorch model with a given image tensor.
@@ -46,7 +46,7 @@ def attack(
         max_iter (int): Maximum number of iterations to perform.
 
     Returns:
-        torch.Tensor: Adversarial image tensor.
+        torch.Tensor: Adversarial image tensor or None if attack failed.
     """
     with torch.no_grad():
         orig_pred = model(tensor)
@@ -64,7 +64,7 @@ def attack(
     for i in range(max_iter):
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=orig_pred_idx)
-        adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), 0, 1)
+        adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
         new_pred = model(adv_tensor).argmax()
         if orig_pred_idx.item() != new_pred:
             return adv_tensor, orig_pred, new_pred
