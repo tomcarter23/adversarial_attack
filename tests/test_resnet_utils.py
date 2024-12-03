@@ -1,9 +1,10 @@
 import pytest
+from unittest.mock import patch, MagicMock
 import torch
 import numpy as np
 from PIL import Image
 
-from adversarial_attack.resnet_utils import load_image, preprocess_image, to_array, category_to_tensor
+from adversarial_attack.resnet_utils import load_image, preprocess_image, to_array, category_to_tensor, get_model_categories, load_model_default_weights
 
 
 @pytest.fixture
@@ -67,3 +68,29 @@ def test_preprocess_to_array_consistency(sample_image):
     array = to_array(preprocessed)
     assert np.allclose(array[100, 100], np.array([255, 0, 0]) / 255, atol=0.1), \
         "Center pixel value should approximately match the original image color (normalized)"
+
+
+@patch("torchvision.models.ResNet50_Weights")
+@patch("torchvision.models.resnet50")
+def test_load_model_valid_model(mock_model, mock_weight):
+    mock_weight.DEFAULT = "mocked_weights"
+    model = load_model_default_weights("resnet50")
+    assert model == mock_model(weights=mock_weight.DEFAULT)
+
+
+def test_load_model_not_found_raises():
+    with pytest.raises(ValueError):
+        load_model_default_weights(model_name="not_found")
+
+
+@patch("torchvision.models.ResNet50_Weights")
+@patch("torchvision.models.resnet50")
+def test_get_model_categories_valid_model(mock_model, mock_weight):
+    mock_weight.DEFAULT = MagicMock(meta={"categories": ["dog"]})
+    categories = get_model_categories("resnet50")
+    assert categories == ["dog"]
+
+
+def test_get_model_categories_not_found_raises():
+    with pytest.raises(ValueError):
+        _ = get_model_categories(model_name="not_found")

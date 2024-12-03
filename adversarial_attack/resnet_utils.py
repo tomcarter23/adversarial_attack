@@ -2,6 +2,46 @@ from PIL import Image
 from torchvision import transforms
 import torch
 import numpy as np
+import torchvision.models as models
+
+
+AVAILABLE_MODELS = {
+    "resnet18": "ResNet18_Weights",
+    "resnet34": "ResNet34_Weights",
+    "resnet50": "ResNet50_Weights",
+    "resnet101": "ResNet101_Weights",
+    "resnet152": "ResNet152_Weights",
+}
+
+
+def load_model_default_weights(model_name: str):
+    """
+    Load a model from a given GitHub repository.
+
+    Args:
+        model_name (str): Name of the model to load.
+
+    Returns:
+        torch.Model: Loaded PyTorch model.
+    """
+    if model_name not in AVAILABLE_MODELS:
+        raise ValueError(f"Model {model_name} not found.")
+
+    weights = getattr(models, AVAILABLE_MODELS[model_name]).DEFAULT
+    return getattr(models, model_name)(weights=weights)
+
+
+def get_model_categories(model_name: str) -> list[str]:
+    """
+    Get the categories of models available.
+
+    Returns:
+        list[str]: List of model categories.
+    """
+    if model_name not in AVAILABLE_MODELS:
+        raise ValueError(f"Model {model_name} not found.")
+
+    return getattr(models, AVAILABLE_MODELS[model_name]).DEFAULT.meta["categories"]
 
 
 def load_image(image_path: str) -> Image:
@@ -82,4 +122,6 @@ def category_to_tensor(categ: str, categs: list[str]) -> torch.Tensor:
     Returns:
         torch.Tensor: Category tensor
     """
+    if categ not in categs:
+        raise ValueError(f"Category {categ} not found in categories.")
     return torch.tensor([categs.index(categ)])

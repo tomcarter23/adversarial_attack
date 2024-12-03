@@ -33,7 +33,7 @@ def attack(
     tensor: torch.Tensor,
     target: torch.Tensor,
     epsilon: float = 1e-3,
-    max_iter: int = 100,
+    max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
     """
     Perform a classic FGSM attack on a PyTorch model with a given image tensor.
