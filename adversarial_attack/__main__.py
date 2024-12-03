@@ -5,6 +5,7 @@ import torch.nn
 from PIL import Image
 import numpy as np
 
+
 from .resnet_utils import (
     AVAILABLE_MODELS,
     load_model_default_weights,
@@ -98,6 +99,7 @@ def main():
         print("Adversarial attack succeeded!")
         print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
         print(f"New Prediction: {categories[new_pred.item()]}")
+
         if args.output is not None:
             Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
     else:
