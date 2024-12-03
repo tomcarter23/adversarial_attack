@@ -3,12 +3,10 @@ import torchvision.models as models
 
 
 AVAILABLE_MODELS = {
-        "resnet18": "ResNet18_Weights",
-        "resnet34": "ResNet34_Weights",
-        "resnet50": "ResNet50_Weights",
-        "resnet101": "ResNet101_Weights",
-        "resnet152": "ResNet152_Weights",
-    }
+    "resnet50": "ResNet50_Weights",
+    "resnet101": "ResNet101_Weights",
+    "resnet152": "ResNet152_Weights",
+}
 
 
 def load_model_default_weights(model_name: str):
@@ -28,7 +26,7 @@ def load_model_default_weights(model_name: str):
     return getattr(models, model_name)(weights=weights)
 
 
-def get_model_categories(model_name) -> list[str]:
+def get_model_categories(model_name: str) -> list[str]:
     """
     Get the categories of models available.
 
