@@ -23,8 +23,7 @@ def load_model_default_weights(model_name: str):
         raise ValueError(f"Model {model_name} not found.")
 
     weights = getattr(models, AVAILABLE_MODELS[model_name]).DEFAULT
-    print(weights)
-    return getattr(models, model_name)(weights="DEFAULT")
+    return getattr(models, model_name)(weights=weights)
 
 
 def get_model_categories(model_name) -> list[str]:
