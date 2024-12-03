@@ -62,7 +62,6 @@ def attack(
     orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
 
     for i in range(max_iter):
-        print(f"iteration {i}, {epsilon}")
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=orig_pred_idx)
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
