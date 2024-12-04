@@ -90,8 +90,6 @@ def main():
 
     model = load_model_default_weights(model_name=args.model)
 
-    print(model)
-
     image = load_image(args.image)
     image_tensor = preprocess_image(image)
 
@@ -101,8 +99,8 @@ def main():
         image=image_tensor,
         categories=get_model_categories(args.model),
         true_category=args.category_truth,
-        epsilon=args.epsilon,
-        max_iter=args.max_iterations,
+        epsilon=float(args.epsilon),
+        max_iter=int(args.max_iterations),
         target_category=args.category_target,
     )
 
