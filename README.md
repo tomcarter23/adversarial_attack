@@ -1,5 +1,5 @@
 # Adversarial Attack
-A library for conducting Adversarial Attacks on a Pytorch model.
+A library for conducting Adversarial Attacks on torchvision ResNet models.
 
 
 ## Installation 
