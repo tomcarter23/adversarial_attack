@@ -85,7 +85,6 @@ def main():
     args = parser.parse_args()
 
     model = load_model_default_weights(model_name=args.model)
-    model.eval()  # IMPORTANT: set model to evaluation mode
 
     image = load_image(args.image)
     image_tensor = preprocess_image(image)

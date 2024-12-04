@@ -3,12 +3,6 @@ import typing as ty
 
 import torch.nn
 from PIL import Image
-import numpy as np
-
-from .resnet_utils import (
-    preprocess_image,
-    to_array,
-)
 from .fgsm import get_attack_fn
 
 
@@ -38,6 +32,7 @@ def perform_attack(
     Returns:
         Image: Adversarial image or None if attack failed.
     """
+    model.eval()  # IMPORTANT: set model to evaluation mode
 
     attack_fn = get_attack_fn(
         mode=mode,
