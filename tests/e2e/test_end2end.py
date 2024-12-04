@@ -5,7 +5,7 @@ from adversarial_attack.resnet_utils import load_model_default_weights, preproce
 
 @pytest.fixture
 def image_truth():
-    return "./input/lionfish_ILSVRC2012_val_00019791.JPEG", "lionfish"
+    return "./tests/e2e/input/lionfish_ILSVRC2012_val_00019791.JPEG", "lionfish"
 
 
 @pytest.mark.parametrize("model_name", ["resnet50"])
