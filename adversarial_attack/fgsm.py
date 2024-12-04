@@ -1,8 +1,11 @@
 import typing as ty
 import torch
 import warnings
+import logging
 
 from .resnet_utils import category_to_tensor
+
+logger = logging.getLogger("adversarial_attack")
 
 
 def compute_gradient(model: torch.nn.Module, input: torch.Tensor, target: torch.Tensor):
@@ -34,6 +37,7 @@ def standard_attack(
     model: torch.nn.Module,
     tensor: torch.Tensor,
     truth: torch.Tensor,
+    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, int, int]]:
@@ -44,14 +48,20 @@ def standard_attack(
         model (torch.Model): PyTorch model to attack.
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
+        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
     Returns:
         torch.Tensor: Adversarial image tensor or None if attack failed.
     """
+    logger.info("Conducting standard attack")
+
     with torch.no_grad():
         orig_pred = model(tensor)
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     orig_pred_idx: int = orig_pred.argmax().item()
     truth_idx: int = truth.item()
@@ -70,6 +80,7 @@ def standard_attack(
     adv_tensor = tensor.clone().detach()
 
     for i in range(max_iter):
+        logger.debug(f"Current output: {model(adv_tensor)}")
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx]))
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
@@ -89,6 +100,7 @@ def targeted_attack(
     tensor: torch.Tensor,
     truth: torch.Tensor,
     target: torch.Tensor,
+    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, int, int]]:
@@ -100,14 +112,20 @@ def targeted_attack(
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
         target (torch.Tensor): Tensor representing targeted category.
+        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
     Returns:
         torch.Tensor: Adversarial image tensor or None if attack failed.
     """
+    logger.info("Conducting targeted attack")
+
     with torch.no_grad():
         orig_pred = model(tensor)
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     orig_pred_idx: int = orig_pred.argmax().item()
     truth_idx: int = truth.item()
@@ -155,6 +173,7 @@ def get_attack_fn(
                 model,
                 tensor=tensor,
                 truth=truth,
+                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
@@ -169,6 +188,7 @@ def get_attack_fn(
                 tensor=tensor,
                 truth=truth,
                 target=target,
+                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
