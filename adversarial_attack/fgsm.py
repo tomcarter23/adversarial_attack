@@ -1,8 +1,11 @@
 import typing as ty
 import torch
 import warnings
+import logging
 
 from .resnet_utils import category_to_tensor
+
+logger = logging.getLogger("adversarial_attack")
 
 
 def compute_gradient(model: torch.nn.Module, input: torch.Tensor, target: torch.Tensor):
@@ -50,8 +53,13 @@ def standard_attack(
     Returns:
         torch.Tensor: Adversarial image tensor or None if attack failed.
     """
+    logger.info("Conducting standard attack")
+
     with torch.no_grad():
         orig_pred = model(tensor)
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     if orig_pred.argmax().item() != truth.item():
         warnings.warn(
@@ -68,12 +76,18 @@ def standard_attack(
     orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
 
     for i in range(max_iter):
+        logger.debug(f"Current output: {model(adv_tensor)}")
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=orig_pred_idx)
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
-        new_pred = model(adv_tensor).argmax()
+        new_output = model(adv_tensor)
+        new_pred = new_output.argmax()
+        logger.debug(
+            f"attack iteration {i}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
         if orig_pred_idx.item() != new_pred:
-            return adv_tensor, orig_pred, new_pred
+            logger.info(f"Standard attack successful.")
+            return adv_tensor, orig_pred.argmax(), new_pred
 
     warnings.warn(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
@@ -104,8 +118,13 @@ def targeted_attack(
     Returns:
         torch.Tensor: Adversarial image tensor or None if attack failed.
     """
+    logger.info("Conducting targeted attack")
+
     with torch.no_grad():
         orig_pred = model(tensor)
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     if orig_pred.argmax().item() != truth.item():
         raise ValueError(
@@ -115,15 +134,19 @@ def targeted_attack(
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
-    orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
 
     for i in range(max_iter):
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=target)
         adv_tensor = torch.clamp(adv_tensor - epsilon * grad.sign(), -2, 2)
-        new_pred = model(adv_tensor).argmax()
-        if orig_pred_idx.item() != new_pred:
-            return adv_tensor, orig_pred, new_pred
+        new_output = model(adv_tensor)
+        new_pred = new_output.argmax()
+        logger.debug(
+            f"Attack iteration {i}, target: {target.item()}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
+        if new_pred.item() == target.item():
+            logger.info(f"Targeted attack successful.")
+            return adv_tensor, orig_pred.argmax(), new_pred
 
     warnings.warn(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
