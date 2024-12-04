@@ -1,7 +1,12 @@
 import pytest
 
 from adversarial_attack.api import perform_attack
-from adversarial_attack.resnet_utils import load_model_default_weights, preprocess_image, get_model_categories, load_image
+from adversarial_attack.resnet_utils import (
+    load_model_default_weights,
+    preprocess_image,
+    get_model_categories,
+    load_image,
+)
 
 import pytest
 import logging
@@ -16,7 +21,10 @@ def test_perform_attack_standard():
         ("./tests/e2e/input/beaker_ILSVRC2012_val_00001780.JPEG", "beaker"),
         ("./tests/e2e/input/doormat_ILSVRC2012_val_00030383.JPEG", "doormat"),
         ("./tests/e2e/input/hare_ILSVRC2012_val_00004064.JPEG", "hare"),
-        ("./tests/e2e/input/jack-o'-lantern_ILSVRC2012_val_00030955.JPEG", "jack-o'-lantern"),
+        (
+            "./tests/e2e/input/jack-o'-lantern_ILSVRC2012_val_00030955.JPEG",
+            "jack-o'-lantern",
+        ),
         ("./tests/e2e/input/lawn_mower_ILSVRC2012_val_00020327.JPEG", "lawn mower"),
         ("./tests/e2e/input/lionfish_ILSVRC2012_val_00019791.JPEG", "lionfish"),
         ("./tests/e2e/input/monarch_ILSVRC2012_val_00002935.JPEG", "monarch"),
@@ -25,6 +33,8 @@ def test_perform_attack_standard():
     ]
 
     models = ["resnet50", "resnet101", "resnet152"]
+
+    total_combinations = len(models) * len(test_cases)
 
     total_tests = 0
     success_count = 0
@@ -35,7 +45,10 @@ def test_perform_attack_standard():
         logger.info(f"Testing model: {model_name}")
         for image_path, true_category in test_cases:
             try:
-                logger.info(f"Running test for image '{image_path}' with true category '{true_category}'")
+                progress_percentage = (total_tests / total_combinations) * 100
+                logger.info(
+                    f"Progress: {total_tests}/{total_combinations} ({progress_percentage:.2f}%) - Running test for image '{image_path}' with true category '{true_category}'"
+                )
 
                 model = load_model_default_weights(model_name)
                 input_image = preprocess_image(load_image(image_path))
@@ -56,16 +69,22 @@ def test_perform_attack_standard():
                     success_count += 1
                 else:
                     logger.warning(
-                        f"Test failed for model '{model_name}', image '{image_path}', true category '{true_category}'")
+                        f"Test failed for model '{model_name}', image '{image_path}', true category '{true_category}'"
+                    )
 
             except Exception as e:
                 logger.error(
-                    f"Error occurred for model '{model_name}', image '{image_path}', true category '{true_category}': {e}")
+                    f"Error occurred for model '{model_name}', image '{image_path}', true category '{true_category}': {e}"
+                )
                 total_tests += 1  # Count this as a test to avoid skewing success rate
 
     success_rate = success_count / total_tests if total_tests > 0 else 0
-    logger.info(f"Completed all tests. Success rate: {success_rate:.2%} ({success_count}/{total_tests})")
-    assert success_rate >= 0.75, f"Success rate {success_rate:.2%} is below the required threshold of 75%."
+    logger.info(
+        f"Completed all tests. Success rate: {success_rate:.2%} ({success_count}/{total_tests})"
+    )
+    assert (
+        success_rate >= 0.75
+    ), f"Success rate {success_rate:.2%} is below the required threshold of 75%."
 
 
 def test_perform_attack_targeted():
@@ -73,7 +92,10 @@ def test_perform_attack_targeted():
         ("./tests/e2e/input/beaker_ILSVRC2012_val_00001780.JPEG", "beaker"),
         ("./tests/e2e/input/doormat_ILSVRC2012_val_00030383.JPEG", "doormat"),
         ("./tests/e2e/input/hare_ILSVRC2012_val_00004064.JPEG", "hare"),
-        ("./tests/e2e/input/jack-o'-lantern_ILSVRC2012_val_00030955.JPEG", "jack-o'-lantern"),
+        (
+            "./tests/e2e/input/jack-o'-lantern_ILSVRC2012_val_00030955.JPEG",
+            "jack-o'-lantern",
+        ),
         ("./tests/e2e/input/lawn_mower_ILSVRC2012_val_00020327.JPEG", "lawn mower"),
         ("./tests/e2e/input/lionfish_ILSVRC2012_val_00019791.JPEG", "lionfish"),
         ("./tests/e2e/input/monarch_ILSVRC2012_val_00002935.JPEG", "monarch"),
@@ -96,6 +118,8 @@ def test_perform_attack_targeted():
 
     models = ["resnet50", "resnet101", "resnet152"]
 
+    total_combinations = len(models) * len(target_categories) * len(test_cases)
+
     total_tests = 0
     success_count = 0
 
@@ -107,8 +131,10 @@ def test_perform_attack_targeted():
             logger.info(f"Testing target category: {target_category}")
             for image_path, true_category in test_cases:
                 try:
+                    progress_percentage = (total_tests / total_combinations) * 100
                     logger.info(
-                        f"Running test for image '{image_path}' with true category '{true_category}' targeting '{target_category}'")
+                        f"Progress: {total_tests}/{total_combinations} ({progress_percentage:.2f}%) - Running test for image '{image_path}' with true category '{true_category}' targeting '{target_category}'"
+                    )
 
                     model = load_model_default_weights(model_name)
                     input_image = preprocess_image(load_image(image_path))
@@ -129,14 +155,24 @@ def test_perform_attack_targeted():
                     if result is not None:
                         success_count += 1
                     else:
-                        logger.warning(f"Test failed for model '{model_name}', image '{image_path}', "
-                                       f"true category '{true_category}', targeting '{target_category}'")
+                        logger.warning(
+                            f"Test failed for model '{model_name}', image '{image_path}', "
+                            f"true category '{true_category}', targeting '{target_category}'"
+                        )
 
                 except Exception as e:
-                    logger.error(f"Error occurred for model '{model_name}', image '{image_path}', "
-                                 f"true category '{true_category}', targeting '{target_category}': {e}")
-                    total_tests += 1  # Count this as a test to avoid skewing success rate
+                    logger.error(
+                        f"Error occurred for model '{model_name}', image '{image_path}', "
+                        f"true category '{true_category}', targeting '{target_category}': {e}"
+                    )
+                    total_tests += (
+                        1  # Count this as a test to avoid skewing success rate
+                    )
 
     success_rate = success_count / total_tests if total_tests > 0 else 0
-    logger.info(f"Completed all tests. Success rate: {success_rate:.2%} ({success_count}/{total_tests})")
-    assert success_rate >= 0.75, f"Success rate {success_rate:.2%} is below the required threshold of 75%."
+    logger.info(
+        f"Completed all tests. Success rate: {success_rate:.2%} ({success_count}/{total_tests})"
+    )
+    assert (
+        success_rate >= 0.75
+    ), f"Success rate {success_rate:.2%} is below the required threshold of 75%."
