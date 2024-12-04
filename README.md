@@ -30,7 +30,7 @@ pip install -e ".[test]"
 You can run the adversarial attack from the command line interface (CLI). Here's the general syntax:
 
 ```bash
-python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_PATH> --category-truth <TRUE_CATEGORY> --category-target <TARGET_CATEGORY> --epsilon <EPSILON> --max-iterations <MAX_ITER> --output <OUTPUT_PATH>
+python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_PATH> --category-truth <TRUE_CATEGORY> --category-target <TARGET_CATEGORY> --epsilon <EPSILON> --max-iterations <MAX_ITER> --output <OUTPUT_PATH> --log <LOG_LEVEL>
 ```
 ### Parameters:
 
@@ -44,6 +44,7 @@ python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_P
 - `--epsilon, -eps`: The epsilon value for the attack (default: `1.0e-3`).
 - `--max-iterations, -it`: Maximum number of iterations for the FGSM attack (default: `50`).
 - `--output, -o`: Path to save the resulting adversarial image.
+- `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
 
 
 ## Running via API
