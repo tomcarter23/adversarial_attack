@@ -15,13 +15,13 @@ from .fgsm import get_attack_fn
 def perform_attack(
     mode: str,
     model: torch.nn.Module,
-    image: Image,
+    image: torch.Tensor,
     categories: list[str],
     true_category: str,
+    target_category: str = None,
     epsilon: float = 1.0e-3,
     max_iter: int = 50,
-    target_category: str = None,
-) -> ty.Optional[Image]:
+) -> ty.Optional[torch.Tensor]:
     """
     API to perform an adversarial attack on a PyTorch model with a given image.
 
@@ -31,20 +31,18 @@ def perform_attack(
         image (Image): Image to attack.
         categories (list[str]): List of categories for the model.
         true_category (str): True category of the image.
+        target_category (str): Optional target category for targeted attacks.
         epsilon (float): Epsilon value for the FGSM attack.
         max_iter (int): Maximum number of iterations for the FGSM attack.
-        target_category (str): Optional target category for targeted attacks.
 
     Returns:
         Image: Adversarial image or None if attack failed.
     """
 
-    image_tensor = preprocess_image(image)
-
     attack_fn = get_attack_fn(
         mode=mode,
         model=model,
-        tensor=image_tensor,
+        tensor=image,
         category_truth=true_category,
         category_target=target_category,
         categories=categories,
@@ -59,7 +57,7 @@ def perform_attack(
         print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
         print(f"New Prediction: {categories[new_pred.item()]}")
 
-        return Image.fromarray(np.uint8(255 * to_array(new_image)))
+        return new_image
 
     print("Adversarial attack failed.")
     return None

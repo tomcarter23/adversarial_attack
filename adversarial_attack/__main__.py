@@ -1,11 +1,15 @@
 import argparse
 import sys
+from PIL import Image
+import numpy as np
 
 from .resnet_utils import (
     AVAILABLE_MODELS,
     load_model_default_weights,
     get_model_categories,
     load_image,
+    to_array,
+    preprocess_image,
 )
 from .api import perform_attack
 
@@ -84,11 +88,12 @@ def main():
     model.eval()  # IMPORTANT: set model to evaluation mode
 
     image = load_image(args.image)
+    image_tensor = preprocess_image(image)
 
     out_image = perform_attack(
         mode=args.mode,
         model=model,
-        image=image,
+        image=image_tensor,
         categories=get_model_categories(args.model),
         true_category=args.category_truth,
         epsilon=args.epsilon,
@@ -102,7 +107,7 @@ def main():
 
     if args.output is not None:
         print(f"Saving adversarial image to {args.output}")
-        out_image.save(args.output)
+        Image.fromarray(np.uint8(255 * to_array(out_image))).save(args.output)
 
     else:
         print("No output image to save.")
