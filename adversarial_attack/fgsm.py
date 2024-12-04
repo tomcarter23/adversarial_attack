@@ -157,6 +157,9 @@ def get_attack_fn(
         elif mode == "targeted":
             target = category_to_tensor(category_target, categories)
             attack_method = targeted_attack
+            if target is None:
+                raise ValueError("Target must be specified for targeted attack.")
+
             return attack_method(
                 model,
                 tensor=tensor,

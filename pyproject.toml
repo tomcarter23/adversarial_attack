@@ -8,7 +8,7 @@ packages = ["adversarial_attack"]
 [project]
 name = "adversarial_attack"
 version = "0.0.1"
-description = "A library for conducting Adversarial Attacks on a Pytorch model."
+description = "A library for conducting Adversarial Attacks on torchvision ResNet models."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE.txt" }

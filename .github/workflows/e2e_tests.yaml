@@ -1,4 +1,4 @@
-name: unit tests
+name: e2e tests
 
 on:
   workflow_dispatch: {}
@@ -25,4 +25,4 @@ jobs:
           pip install -e .[test]
       - name: Run Tests
         run: |
-          pytest ./tests/unit/
+          pytest ./tests/e2e/
