@@ -70,8 +70,8 @@ def test_standard_attack_failure(model):
     epsilon = 0.1
     max_iter = 50
 
-    with pytest.raises(ValueError, match="does not match true class"):
-        standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter)
+    with pytest.warns(RuntimeWarning):
+        assert standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter) is None
 
 
 def test_standard_attack_no_change(model):
