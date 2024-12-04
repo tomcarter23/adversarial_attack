@@ -67,7 +67,7 @@ def standard_attack(
         warnings.warn(
             (
                 f"Model prediction `{categories[orig_pred.argmax().item()]}` does not match true class `{categories[truth.item()]}`."
-                f"It is therefore pointless to perform an attack."
+                f"It is therefore pointless to perform an attack. Not attacking."
             ),
             RuntimeWarning,
         )
@@ -133,7 +133,7 @@ def targeted_attack(
     if orig_pred.argmax().item() != truth.item():
         raise ValueError(
             f"Model prediction {categories[orig_pred.argmax().item()]} does not match true class {categories[truth.item()]}.",
-            f"It is therefore pointless to perform an attack.",
+            f"It is therefore pointless to perform an attack. Not attacking.",
         )
 
     # make a copy of the input tensor
