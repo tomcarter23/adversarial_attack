@@ -2,6 +2,7 @@ import argparse
 import sys
 from PIL import Image
 import numpy as np
+import logging
 
 from adversarial_attack.resnet_utils import (
     AVAILABLE_MODELS,
@@ -11,8 +12,17 @@ from adversarial_attack.resnet_utils import (
     to_array,
     preprocess_image,
 )
-from .fgsm import get_attack_fn
 from adversarial_attack.api import perform_attack
+
+logger = logging.getLogger("adversarial_attack")
+
+
+def setup_logging(level: str):
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s\t%(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)
 
 
 def main():
@@ -82,8 +92,15 @@ def main():
         help="Path to save the adversarial image.",
         required=False,
     )
+    parser.add_argument(
+        "--log",
+        default="WARNING",
+        help=f"Set the logging level. Available options: {list(logging._nameToLevel.keys())}",
+    )
 
     args = parser.parse_args()
+
+    setup_logging(level=args.log)
 
     if args.mode == "targeted" and args.category_target is None:
         raise ValueError("Target category is required for targeted attacks.")
@@ -99,8 +116,8 @@ def main():
         image=image_tensor,
         categories=get_model_categories(args.model),
         true_category=args.category_truth,
-        epsilon=args.epsilon,
-        max_iter=args.max_iterations,
+        epsilon=float(args.epsilon),
+        max_iter=int(args.max_iterations),
         target_category=args.category_target,
     )
 
