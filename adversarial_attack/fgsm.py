@@ -54,10 +54,14 @@ def standard_attack(
         orig_pred = model(tensor)
 
     if orig_pred.argmax().item() != truth.item():
-        raise ValueError(
-            f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}.",
-            f"It is therefore pointless to perform an attack.",
+        warnings.warn(
+            (
+                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
+                f"It is therefore pointless to perform an attack."
+            ),
+            RuntimeWarning,
         )
+        return None
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
