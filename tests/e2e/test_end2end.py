@@ -8,7 +8,6 @@ def image_truth():
     return "./tests/e2e/input/lionfish_ILSVRC2012_val_00019791.JPEG", "lionfish"
 
 
-@pytest.mark.parametrize("model_name", ["resnet50"])
 @pytest.mark.parametrize("model_name", ["resnet18", "resnet34", "resnet50", "resnet101", "resnet152"])
 def test_perform_attack_standard(model_name, image_truth):
     image, true_category = image_truth
