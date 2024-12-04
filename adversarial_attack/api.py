@@ -47,10 +47,10 @@ def perform_attack(
     results = attack_fn()
 
     if results is not None:
-        new_image, orig_pred, new_pred = results
+        new_image, orig_pred_idx, new_pred_idx = results
         print("Adversarial attack succeeded!")
-        print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
-        print(f"New Prediction: {categories[new_pred.item()]}")
+        print(f"Original Prediction: {categories[orig_pred_idx]}")
+        print(f"New Prediction: {categories[new_pred_idx]}")
 
         return new_image
 

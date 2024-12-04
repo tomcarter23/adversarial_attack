@@ -36,7 +36,7 @@ def standard_attack(
     truth: torch.Tensor,
     epsilon: float = 1e-3,
     max_iter: int = 50,
-) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> ty.Optional[tuple[torch.Tensor, int, int]]:
     """
     Perform a classic FGSM attack on a PyTorch model with a given image tensor.
 
@@ -53,10 +53,13 @@ def standard_attack(
     with torch.no_grad():
         orig_pred = model(tensor)
 
-    if orig_pred.argmax().item() != truth.item():
+    orig_pred_idx: int = orig_pred.argmax().item()
+    truth_idx: int = truth.item()
+
+    if orig_pred_idx != truth_idx:
         warnings.warn(
             (
-                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
+                f"Model prediction {orig_pred_idx} does not match true class {truth_idx}."
                 f"It is therefore pointless to perform an attack."
             ),
             RuntimeWarning,
@@ -65,15 +68,14 @@ def standard_attack(
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
-    orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
 
     for i in range(max_iter):
         model.zero_grad()
-        grad = compute_gradient(model=model, input=adv_tensor, target=orig_pred_idx)
+        grad = compute_gradient(model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx]))
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
-        new_pred = model(adv_tensor).argmax()
-        if orig_pred_idx.item() != new_pred:
-            return adv_tensor, orig_pred, new_pred
+        new_pred_idx = model(adv_tensor).argmax()
+        if orig_pred_idx != new_pred_idx:
+            return adv_tensor, orig_pred_idx, new_pred_idx
 
     warnings.warn(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
@@ -89,7 +91,7 @@ def targeted_attack(
     target: torch.Tensor,
     epsilon: float = 1e-3,
     max_iter: int = 50,
-) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> ty.Optional[tuple[torch.Tensor, int, int]]:
     """
     Perform a targeted FGSM attack on a PyTorch model with a given image tensor.
 
@@ -107,23 +109,25 @@ def targeted_attack(
     with torch.no_grad():
         orig_pred = model(tensor)
 
-    if orig_pred.argmax().item() != truth.item():
+    orig_pred_idx: int = orig_pred.argmax().item()
+    truth_idx: int = truth.item()
+
+    if orig_pred_idx != truth_idx:
         raise ValueError(
-            f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}.",
+            f"Model prediction {orig_pred_idx} does not match true class {truth_idx}.",
             f"It is therefore pointless to perform an attack.",
         )
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
-    orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
 
     for i in range(max_iter):
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=target)
         adv_tensor = torch.clamp(adv_tensor - epsilon * grad.sign(), -2, 2)
-        new_pred = model(adv_tensor).argmax()
-        if orig_pred_idx.item() != new_pred:
-            return adv_tensor, orig_pred, new_pred
+        new_pred_idx = model(adv_tensor).argmax().item()
+        if orig_pred_idx != new_pred_idx:
+            return adv_tensor, orig_pred_idx, new_pred_idx
 
     warnings.warn(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
