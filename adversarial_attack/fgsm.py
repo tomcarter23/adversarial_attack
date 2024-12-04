@@ -55,8 +55,11 @@ def standard_attack(
 
     if orig_pred.argmax().item() != truth.item():
         warnings.warn(
-            f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}.",
-            f"It is therefore pointless to perform an attack.",
+            (
+                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
+                f"It is therefore pointless to perform an attack."
+            ),
+            RuntimeWarning,
         )
         return None
 
