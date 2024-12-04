@@ -1,24 +1,29 @@
 import argparse
 import sys
 
-import torch.nn
-from PIL import Image
-import numpy as np
-
-
 from .resnet_utils import (
     AVAILABLE_MODELS,
     load_model_default_weights,
     get_model_categories,
-    category_to_tensor,
     load_image,
-    preprocess_image,
-    to_array,
 )
-from .fgsm import get_attack_fn
+from .api import perform_attack
 
 
 def main():
+    """
+    CLI entry point for the adversarial attack.
+    Can perform a targeted or standard attack on a given image for a torchvision resnet model
+    supported by the software.
+
+    Usage examples:
+        $ python -m adversarial_attack --model resnet18 --mode targeted --image path/to/image.jpg --category-truth cat \
+            --category-target dog --epsilon 1.0e-3 --max-iterations 50 --output path/to/output.jpg
+
+        $ python -m adversarial_attack --model resnet18 --mode standard --image path/to/image.jpg --category-truth cat \
+             --epsilon 1.0e-3 --max-iterations 50 --output path/to/output.jpg
+    """
+
     parser = argparse.ArgumentParser(
         description="Run adversarial attack on a PyTorch model with a given image."
     )
@@ -79,31 +84,28 @@ def main():
     model.eval()  # IMPORTANT: set model to evaluation mode
 
     image = load_image(args.image)
-    image_tensor = preprocess_image(image)
 
-    categories = get_model_categories(args.model)
-    attack_fn = get_attack_fn(
+    out_image = perform_attack(
         mode=args.mode,
         model=model,
-        tensor=image_tensor,
-        category_truth=args.category_truth,
-        category_target=args.category_target,
-        categories=categories,
+        image=image,
+        categories=get_model_categories(args.model),
+        true_category=args.category_truth,
         epsilon=args.epsilon,
-        max_iter=int(args.max_iterations),
+        max_iter=args.max_iterations,
+        target_category=args.category_target,
     )
-    results = attack_fn()
 
-    if results is not None:
-        new_image, orig_pred, new_pred = results
-        print("Adversarial attack succeeded!")
-        print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
-        print(f"New Prediction: {categories[new_pred.item()]}")
+    if out_image is None:
+        print("No adversarial generated. If output requested no image will be saved.")
+        return None
 
-        if args.output is not None:
-            Image.fromarray(np.uint8(255 * to_array(new_image))).save(args.output)
+    if args.output is not None:
+        print(f"Saving adversarial image to {args.output}")
+        out_image.save(args.output)
+
     else:
-        print("Adversarial attack failed. Won't save image if output path is provided.")
+        print("No output image to save.")
 
 
 if __name__ == "__main__":
