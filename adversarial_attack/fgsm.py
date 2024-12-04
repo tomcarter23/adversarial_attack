@@ -57,7 +57,9 @@ def standard_attack(
 
     with torch.no_grad():
         orig_pred = model(tensor)
-    logger.debug(f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred).max()}")
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     if orig_pred.argmax().item() != truth.item():
         warnings.warn(
@@ -80,7 +82,9 @@ def standard_attack(
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
         new_output = model(adv_tensor)
         new_pred = new_output.argmax()
-        logger.debug(f"attack iteration {i}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output).max()}")
+        logger.debug(
+            f"attack iteration {i}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
         if orig_pred_idx.item() != new_pred:
             logger.info(f"Standard attack successful.")
             return adv_tensor, orig_pred.argmax(), new_pred
@@ -118,7 +122,9 @@ def targeted_attack(
 
     with torch.no_grad():
         orig_pred = model(tensor)
-    logger.debug(f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred).max()}")
+    logger.debug(
+        f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
+    )
 
     if orig_pred.argmax().item() != truth.item():
         raise ValueError(
@@ -135,7 +141,9 @@ def targeted_attack(
         adv_tensor = torch.clamp(adv_tensor - epsilon * grad.sign(), -2, 2)
         new_output = model(adv_tensor)
         new_pred = new_output.argmax()
-        logger.debug(f"Attack iteration {i}, target: {target.item()}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output).max()}")
+        logger.debug(
+            f"Attack iteration {i}, target: {target.item()}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
         if new_pred.item() == target.item():
             logger.info(f"Targeted attack successful.")
             return adv_tensor, orig_pred.argmax(), new_pred
