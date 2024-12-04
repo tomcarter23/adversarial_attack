@@ -34,6 +34,7 @@ def standard_attack(
     model: torch.nn.Module,
     tensor: torch.Tensor,
     truth: torch.Tensor,
+    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
@@ -44,6 +45,7 @@ def standard_attack(
         model (torch.Model): PyTorch model to attack.
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
+        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -56,7 +58,7 @@ def standard_attack(
     if orig_pred.argmax().item() != truth.item():
         warnings.warn(
             (
-                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
+                f"Model prediction `{categories[orig_pred.argmax().item()]}` does not match true class `{categories[truth.item()]}`."
                 f"It is therefore pointless to perform an attack."
             ),
             RuntimeWarning,
@@ -87,6 +89,7 @@ def targeted_attack(
     tensor: torch.Tensor,
     truth: torch.Tensor,
     target: torch.Tensor,
+    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
@@ -98,6 +101,7 @@ def targeted_attack(
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
         target (torch.Tensor): Tensor representing targeted category.
+        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -109,7 +113,7 @@ def targeted_attack(
 
     if orig_pred.argmax().item() != truth.item():
         raise ValueError(
-            f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}.",
+            f"Model prediction {categories[orig_pred.argmax().item()]} does not match true class {categories[truth.item()]}.",
             f"It is therefore pointless to perform an attack.",
         )
 
@@ -151,6 +155,7 @@ def get_attack_fn(
                 model,
                 tensor=tensor,
                 truth=truth,
+                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
@@ -165,6 +170,7 @@ def get_attack_fn(
                 tensor=tensor,
                 truth=truth,
                 target=target,
+                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
