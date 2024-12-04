@@ -5,8 +5,12 @@ import torch.nn
 from PIL import Image
 import numpy as np
 
+<<<<<<< Updated upstream
 
 from .resnet_utils import (
+=======
+from adversarial_attack.resnet_utils import (
+>>>>>>> Stashed changes
     AVAILABLE_MODELS,
     load_model_default_weights,
     get_model_categories,
@@ -15,7 +19,11 @@ from .resnet_utils import (
     preprocess_image,
     to_array,
 )
+<<<<<<< Updated upstream
 from .fgsm import get_attack_fn
+=======
+from adversarial_attack.api import perform_attack
+>>>>>>> Stashed changes
 
 
 def main():
@@ -50,7 +58,7 @@ def main():
         "--category-target",
         "-ct",
         help="String representing the true category of the image.",
-        required="targeted" in sys.argv,  # required only for targeted attacks
+        required=True if "targeted" in sys.argv else False,  # required only for targeted attacks
     )
     parser.add_argument(
         "--epsilon",
@@ -75,8 +83,13 @@ def main():
 
     args = parser.parse_args()
 
+    if args.mode == "targeted" and args.category_target is None:
+        raise ValueError("Target category is required for targeted attacks.")
+
     model = load_model_default_weights(model_name=args.model)
     model.eval()  # IMPORTANT: set model to evaluation mode
+
+    print(model)
 
     image = load_image(args.image)
     image_tensor = preprocess_image(image)
