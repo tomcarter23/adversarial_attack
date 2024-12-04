@@ -67,7 +67,6 @@ def standard_attack(
                 f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
                 f"It is therefore pointless to perform an attack."
             ),
-            RuntimeWarning,
         )
         return None
 
@@ -91,7 +90,6 @@ def standard_attack(
 
     logger.warning(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
     )
     return None
 
@@ -132,7 +130,6 @@ def targeted_attack(
                 f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
                 f"It is therefore pointless to perform an attack."
             ),
-            RuntimeWarning,
         )
         return None
 
@@ -152,9 +149,8 @@ def targeted_attack(
             logger.info(f"Targeted attack successful.")
             return adv_tensor, orig_pred.argmax(), new_pred
 
-    warnings.warn(
-        f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
+    logger.warning(
+        f"Failed to achieve target prediction of the model after {max_iter} tries.",
     )
     return None
 
