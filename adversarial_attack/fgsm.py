@@ -24,9 +24,6 @@ def compute_gradient(model: torch.nn.Module, input: torch.Tensor, target: torch.
 
     output = model(input)
 
-
-    print(output)
-    print(target)
     loss = torch.nn.functional.nll_loss(output, target=target)
 
     loss.backward()
