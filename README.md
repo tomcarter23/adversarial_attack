@@ -16,6 +16,10 @@ The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResN
 
 We observe a success rate of 96.30% for the standard attack and a success rate of 89.63% for the targeted attack. Both attack mechanisms are tested on a set of sample images taken from the ILSVRC2012 validation dataset and using the models `resnet50`, `resnet101` and `resnet152`. See the section *End-to-End Tests* for more details. 
 
+## Design
+The library has been designed to be easily integratable into any pipeline, either through the API or through the CLI interface. Although only two attacks are present the codebase has been designed to be easily extendable by separating out utilities specific to the models and the actual attack mechanism. 
+To add a new mechanism the developer or user would only need to add the attack functionality and update the `get_attack_fn` to incorporate the new attack. 
+
 ## Installation
 Adversarial Attack can be installed by first cloning the repository and the installing dependecies using pip. It is reccomended to use a virtual environment to install dependencies.
 
@@ -172,3 +176,13 @@ The standard attack tests test the success rate of the standard FGSM attack on t
 The targeted attack tests test the success rate of the targeted FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. For each image and model the target attack using the target category of the other remaining 8 categories that are represented in the `sample_images` directory. We observe a success rate of `89.63%` across all 270 tests.
 
 Failures for each type of tests typically occur when the models original prediction does not match the true category of the image. When this occurs performing an attack is pointless and the attack fails. 
+
+## To Do: 
+
+- Add more attack mechanisms
+  - Projected Gradient Descent (PGD)
+  - Black box attacks where the gradient is unknown
+- Add support for more models out of the box. There are many more image classification models that could be supported such those in torchvision but also others within Huggingface for example
+- Implement a release workflow and publish the repo on PyPI 
+- Notebook tutorial of using the API with a custom PyTorch model
+- More in depth testing and reporting into attack  
