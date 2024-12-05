@@ -64,26 +64,25 @@ def standard_attack(
     )
 
     if orig_pred.argmax().item() != truth.item():
-        warnings.warn(
+        logger.warning(
             (
                 f"Model prediction `{categories[orig_pred.argmax().item()]}` does not match true class `{categories[truth.item()]}`."
                 f"It is therefore pointless to perform an attack. Not attacking."
             ),
-            RuntimeWarning,
         )
         return None
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
-    orig_pred_idx = torch.tensor([orig_pred.argmax().item()])
+    orig_pred_idx = torch.tensor([orig_pred.argmax(dim=1).item()])
 
     for i in range(max_iter):
-        logger.debug(f"Current output: {model(adv_tensor)}")
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=orig_pred_idx)
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
         new_output = model(adv_tensor)
-        new_pred = new_output.argmax()
+        #logger.debug(f"new_output: {torch.nn.functional.softmax(new_output, dim=1)}")
+        new_pred = new_output.argmax(dim=1)
         logger.debug(
             f"attack iteration {i}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
         )
@@ -91,9 +90,8 @@ def standard_attack(
             logger.info(f"Standard attack successful.")
             return adv_tensor, orig_pred.argmax(), new_pred
 
-    warnings.warn(
+    logger.warning(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
     )
     return None
 
@@ -131,10 +129,13 @@ def targeted_attack(
     )
 
     if orig_pred.argmax().item() != truth.item():
-        raise ValueError(
-            f"Model prediction {categories[orig_pred.argmax().item()]} does not match true class {categories[truth.item()]}.",
-            f"It is therefore pointless to perform an attack. Not attacking.",
+        logger.warning(
+            (
+                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
+                f"It is therefore pointless to perform an attack."
+            ),
         )
+        return None
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
@@ -152,9 +153,8 @@ def targeted_attack(
             logger.info(f"Targeted attack successful.")
             return adv_tensor, orig_pred.argmax(), new_pred
 
-    warnings.warn(
-        f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
+    logger.warning(
+        f"Failed to achieve target prediction of the model after {max_iter} tries.",
     )
     return None
 

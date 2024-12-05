@@ -4,8 +4,6 @@ import pytest
 
 from adversarial_attack.__main__ import main
 
-from adversarial_attack import resnet_utils
-
 
 @patch("adversarial_attack.__main__.preprocess_image", MagicMock(return_value="preprocessed_image"))
 @patch("adversarial_attack.__main__.load_image", MagicMock(return_value="loaded_image"))
@@ -22,7 +20,8 @@ def test_main_calls_perform_attack_with_args(mocked_args):
         category_target=None,
         epsilon=1.0e-3,
         max_iterations=50,
-        output=None
+        output=None,
+        log="WARNING"
     )
 
     # Patch perform_attack function
@@ -54,7 +53,8 @@ def test_main_targeted_mode_missing_target(mock_args):
         category_target=None,  # Missing target category
         epsilon=1.0e-3,
         max_iterations=50,
-        output=None
+        output=None,
+        log="WARNING"
     )
 
     # Run main and expect SystemExit due to argparse validation
