@@ -78,12 +78,15 @@ def standard_attack(
 
     for i in range(max_iter):
         model.zero_grad()
-        grad = compute_gradient(
-            model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx])
-        )
+        grad = compute_gradient(model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx]))
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
-        new_pred_idx = model(adv_tensor).argmax()
+        new_output = model(adv_tensor)
+        new_pred_idx = new_output.argmax()
+        logger.debug(
+            f"attack iteration {i}, current prediction: {new_pred_idx}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
         if orig_pred_idx != new_pred_idx:
+            logger.info(f"Standard attack successful.")
             return adv_tensor, orig_pred_idx, new_pred_idx
 
     logger.warning(
@@ -124,6 +127,7 @@ def targeted_attack(
 
     orig_pred_idx: int = orig_pred.argmax().item()
     truth_idx: int = truth.item()
+    target_idx: int = target.item()
 
     if orig_pred_idx != truth_idx:
         logger.warning(
@@ -141,8 +145,13 @@ def targeted_attack(
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=target)
         adv_tensor = torch.clamp(adv_tensor - epsilon * grad.sign(), -2, 2)
-        new_pred_idx = model(adv_tensor).argmax().item()
-        if orig_pred_idx != new_pred_idx:
+        new_output = model(adv_tensor)
+        new_pred_idx = new_output.argmax(dim=1).item()
+        logger.debug(
+            f"Attack iteration {i}, target: {target_idx}, current prediction: {new_pred_idx}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
+        )
+        if new_pred_idx == target_idx:
+            logger.info(f"Targeted attack successful.")
             return adv_tensor, orig_pred_idx, new_pred_idx
 
     logger.warning(

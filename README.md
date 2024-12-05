@@ -2,11 +2,17 @@
 A library for conducting Adversarial Attacks on pytorch image classifier models.
 
 ## Overview
-Adversarial Attack is a Python library that provides a simple API and CLI for conducting adversarial attacks on PyTorch image classifier models. The library supports both standard and targeted attacks using the Fast Gradient Sign Method (FGSM) algorithm (https://arxiv.org/abs/1412.6572). 
+Adversarial Attack is a Python library that provides a simple API and CLI for conducting adversarial Fast Gradient Sign Method (FGSM) (https://arxiv.org/abs/1412.6572) attacks on PyTorch image classifier models.
 
-Given a pre-trained PyTorch model and an input image, the library generates an adversarial image that is misclassified by the model but looks almost identical to the original image. 
+The paper demonstrates that it is possible to generate adversarial examples by adding small perturbations to the input image that are imperceptible to the human eye but can cause the model to misclassify the image.
+This is acomploshed by taking the gradient of the loss function with respect to the input image and then adding a small perturbation in the direction that increases the loss the most.
 
-The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResNet50) and utility functions for loading images, preprocessing images. However users can also use their own models and images but must include their own preprocessing and loading steps (see *Running via API* section).
+![alt text](FGSM_panda.png)
+The above image (taken from the FGSM paper) illstrates the result of an FGSM attack that has been able to trick the model into classifying a panda as a gibbon. 
+
+The library implements the standard FGSM attack and a targeted FGSM attack. The standard attack aims to generate an adversarial image that is misclassified by the model, while the targeted attack aims to generate an adversarial image that is misclassified as a specific target category.
+
+The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResNet50) and utility functions for loading images, preprocessing images. However, users can also use their own models and images but must include their own preprocessing and loading steps (see *Running via API* section).
 
 ## Installation
 Adversarial Attack can be installed by first cloning the repository and the installing dependecies using pip. It is reccomended to use a virtual environment to install dependencies.
@@ -34,17 +40,17 @@ python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_P
 ```
 ### Parameters:
 
-- `--model, -m`: The model to attack (e.g., `resnet18`, `resnet50`).
-- `--mode`: The type of attack:
+- `--model, -m`: The model to attack (e.g., `resnet18`, `resnet50`) (required).
+- `--mode`: The type of attack (optional):
   - `standard`: Standard FGSM attack.
   - `targeted`: Targeted FGSM attack (default).
-- `--image, -i`: Path to the input image to attack.
-- `--category-truth, -c`: The true class label of the image (e.g., `cat`).
+- `--image, -i`: Path to the input image to attack (required).
+- `--category-truth, -c`: The true class label of the image (e.g., `cat`) (required).
 - `--category-target, -ct`: The target class label for the targeted attack (only required for targeted mode).
-- `--epsilon, -eps`: The epsilon value for the attack (default: `1.0e-3`).
-- `--max-iterations, -it`: Maximum number of iterations for the FGSM attack (default: `50`).
-- `--output, -o`: Path to save the resulting adversarial image.
-- `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
+- `--epsilon, -eps`: The epsilon value for the attack (optional. default: `1.0e-3`).
+- `--max-iterations, -it`: Maximum number of iterations for the FGSM attack (optional. default: `50`).
+- `--output, -o`: Path to save the resulting adversarial image (optional).
+- `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) (optional).
 
 
 ## Running via API
@@ -86,12 +92,81 @@ if result_image is not None:
     result_image.save('path/to/output.jpg')
 ```
 
-## Examples
+## Running CLI via Docker
+
+The library can also be run via Docker. To build the Docker image, run the following command:
+
+```bash
+docker build -t adversarial_attack .
+```
+
+The latest version of the library is available on Docker Hub. To pull the image, run the following command:
+
+```bash
+docker pull tomcarter23/adversarial_attack
+```
+
+To run the Docker container and CLI, use the following command as an example:
+
+```bash
+docker run -v /path/to/images:/app/images -v /path/to/output:/app/output tomcarter23/adversarial_attack python -m adversarial_attack --model resnet50 --mode targeted --image ./images/goldfish.JPEG --category-truth goldfish --category-target hare --epsilon 1.0e-3 --max-iterations 50 --output ./output/adversarial_goldfish.JPEG --log DEBUG
+
+```
+
+The command mounts the `/path/to/images` directory to the `/app/images` directory in the container and the `/path/to/output` directory to the `/app/output` directory in the container. The command then runs the adversarial attack on the `goldfish.JPEG` image in the `/images` directory and saves the resulting adversarial image as `adversarial_goldfish.JPEG` in the `/output` directory.
+
+## Example
 
 The `sample_images/imagenet` directory contains a set of example images from the ILSCVR2012 Imagenet validation dataset which constitute part of the same dataset that the pre-trained models were trained on. 
 The images are named according to their true class label (e.g., `lawn_mower_ILSVRC2012_val_00020327.JPEG`), where the true class label is the part of the filename before the `ILSVRC2012` identifier. 
 True classes in each of the provided models do not contain underscores e.g. `lawn mower`. This format should be used if using these sample images for testing.
 
+The following command demonstrates how to run a targeted adversarial attack on a ResNet50 model using the `hare` image from the `sample_images` directory. 
+The target category is `goldfish`, and the epsilon value is `1.0e-3` with a maximum of `50` iterations. The resulting adversarial image is saved as `output_images/hare_to_goldfish.jpg`.
+
 ```bash
-python -m adversarial_attack --model resnet50 --mode targeted --image sample_images/imagenet/lawn_mower_ILSVRC2012_val_00020327.JPEG --category-truth "lawn mower" --category-target goldfish --epsilon 1.0e-3 --max-iterations 50 --output output.jpg
+python -m adversarial_attack --model resnet50 --mode targeted --image sample_images/imagenet/hare_ILSVRC2012_val_00004064.JPEG --category-truth hare --category-target goldfish --epsilon 1.0e-3 --max-iterations 50 --output output_images/hare_to_goldfish.JPEG --log DEBUG
 ```
+
+The following table shows the original and perturbed images generated by the above command:
+
+
+| Orignal Image                                                        | Perturbed Image                                 |
+|----------------------------------------------------------------------|-------------------------------------------------|
+| Classification: `hare`                                               | Classification: `goldfish`                      |
+| Confidence: 0.44                                                     | Probability: 0.25                               |
+| ![Image 1](sample_images/imagenet/hare_ILSVRC2012_val_00004064.JPEG) | ![Image 2](output_images/hare_to_goldfish.JPEG) |
+
+As can be seen, the perturbed image is misclassified by the model as the target category `goldfish` with a confidence of `0.9999`. The perturbed image looks almost identical to the original image, demonstrating the effectiveness of the adversarial attack and the limitations of the model.
+
+NOTE: The perturbed image is a cropped version of the original image due to the preprocessing steps needed to pass the image throught the model. The perturbed image could be upscaled using information from the original image. This is left as future work. 
+## Testing
+
+### Unit Tests
+
+The library comes with a set of unit tests that can be run using the following command:
+
+```bash
+pytest tests/unit -v
+```
+
+These unit tests cover the core functionality of the library, including loading models, images, and performing adversarial attacks. 
+
+The tests use mocking where appropriate to isolate the testing of individual components of the library.
+
+### End-to-End Tests
+
+
+The library also comes with a set of end-to-end tests that can be run using the following command:
+
+```bash
+pytest tests/e2e -v
+```
+
+The end-to-end tests are broken down into two categories: standard and targeted attacks. 
+
+The standard attack tests test the success rate of the standard FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. We observe a success rate of `96.30%` across all 27 tests.
+
+The targeted attack tests test the success rate of the targeted FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. For each image and model the target attack using the target category of the other remaining 8 categories that are represented in the `sample_images` directory. We observe a success rate of `89.63%` across all 270 tests.
+
+Failures for each type of tests typically occur when the models original prediction does not match the true category of the image. When this occurs performing an attack is pointless and the attack fails. 

@@ -50,9 +50,9 @@ def perform_attack(
 
     if results is not None:
         new_image, orig_pred_idx, new_pred_idx = results
-        print("Adversarial attack succeeded!")
-        print(f"Original Prediction: {categories[orig_pred_idx]}")
-        print(f"New Prediction: {categories[new_pred_idx]}")
+        logger.info("Adversarial attack succeeded!")
+        logger.info(f"Original Prediction: {categories[orig_pred_idx]}")
+        logger.info(f"New Prediction: {categories[new_pred_idx]}")
 
         return new_image
 

@@ -64,6 +64,12 @@ def test_perform_attack_standard():
                     max_iter=10,
                 )
 
+                if result is not None:
+                    # if attack is successful, the new prediction should be different from the true category
+                    # feed the adversarial image to the model and get the new prediction
+                    new_pred_idx = model(result).argmax().item()
+                    assert new_pred_idx != categories.index(true_category), "Attack should change the model prediction."
+
                 total_tests += 1
                 if result is not None:
                     success_count += 1
@@ -150,6 +156,12 @@ def test_perform_attack_targeted():
                         epsilon=1.0e-1,
                         max_iter=10,
                     )
+
+                    if result is not None:
+                        # if attack is successful, the new prediction should be the target category
+                        # feed the adversarial image to the model and get the new prediction
+                        new_pred_idx = model(result).argmax().item()
+                        assert new_pred_idx == categories.index(target_category), "Attack should change the model prediction to target."
 
                     total_tests += 1
                     if result is not None:
