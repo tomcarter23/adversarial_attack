@@ -137,5 +137,6 @@ The end-to-end tests are broken down into two categories: standard and targeted 
 
 The standard attack tests test the success rate of the standard FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. We observe a success rate of `96.30%` across all 27 tests.
 
-The targeted attack tests test the success rate of the targeted FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. For each image and model the target attack using the target category of the other remaining 8 categories that are represented in the `sample_images` directory.
-We observe a success rate of `89.63%` across all 270 tests.
+The targeted attack tests test the success rate of the targeted FGSM attack on the set of `sample_images` for the default models `resnet50`,  `resnet101` and `resnet152`. For each image and model the target attack using the target category of the other remaining 8 categories that are represented in the `sample_images` directory. We observe a success rate of `89.63%` across all 270 tests.
+
+Failures for each type of tests typically occur when the models original prediction does not match the true category of the image. When this occurs performing an attack is pointless and the attack fails. 
