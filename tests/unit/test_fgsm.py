@@ -57,7 +57,7 @@ def test_standard_attack_success(model):
 
     assert result is not None, "Attack should succeed."
     adv_tensor, orig_pred, new_pred = result
-    assert new_pred.item() != orig_pred.item(), "Attack should change the model prediction."
+    assert orig_pred != new_pred, "Attack should change the model prediction."
 
 
 def test_targeted_attack_success(model):
@@ -80,7 +80,7 @@ def test_targeted_attack_success(model):
 
     assert result is not None, "Attack should succeed."
     adv_tensor, orig_pred, new_pred = result
-    assert new_pred.item() == 2, "Attack should change the model prediction to target."
+    assert new_pred == 2, "Attack should change the model prediction to target."
 
 
 def test_standard_attack_failure(model):
