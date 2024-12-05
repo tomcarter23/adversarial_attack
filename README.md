@@ -35,17 +35,17 @@ python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_P
 ```
 ### Parameters:
 
-- `--model, -m`: The model to attack (e.g., `resnet18`, `resnet50`).
-- `--mode`: The type of attack:
+- `--model, -m`: The model to attack (e.g., `resnet18`, `resnet50`) (required).
+- `--mode`: The type of attack (optional):
   - `standard`: Standard FGSM attack.
   - `targeted`: Targeted FGSM attack (default).
-- `--image, -i`: Path to the input image to attack.
-- `--category-truth, -c`: The true class label of the image (e.g., `cat`).
+- `--image, -i`: Path to the input image to attack (required).
+- `--category-truth, -c`: The true class label of the image (e.g., `cat`) (required).
 - `--category-target, -ct`: The target class label for the targeted attack (only required for targeted mode).
-- `--epsilon, -eps`: The epsilon value for the attack (default: `1.0e-3`).
-- `--max-iterations, -it`: Maximum number of iterations for the FGSM attack (default: `50`).
-- `--output, -o`: Path to save the resulting adversarial image.
-- `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).
+- `--epsilon, -eps`: The epsilon value for the attack (optional. default: `1.0e-3`).
+- `--max-iterations, -it`: Maximum number of iterations for the FGSM attack (optional. default: `50`).
+- `--output, -o`: Path to save the resulting adversarial image (optional).
+- `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) (optional).
 
 
 ## Running via API

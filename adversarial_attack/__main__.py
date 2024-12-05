@@ -94,7 +94,7 @@ def main():
     )
     parser.add_argument(
         "--log",
-        default="WARNING",
+        default="INFO",
         help=f"Set the logging level. Available options: {list(logging._nameToLevel.keys())}",
     )
 
