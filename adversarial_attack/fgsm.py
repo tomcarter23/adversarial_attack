@@ -37,7 +37,6 @@ def standard_attack(
     model: torch.nn.Module,
     tensor: torch.Tensor,
     truth: torch.Tensor,
-    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, int, int]]:
@@ -48,7 +47,6 @@ def standard_attack(
         model (torch.Model): PyTorch model to attack.
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
-        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -80,7 +78,9 @@ def standard_attack(
 
     for i in range(max_iter):
         model.zero_grad()
-        grad = compute_gradient(model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx]))
+        grad = compute_gradient(
+            model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx])
+        )
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
         new_pred_idx = model(adv_tensor).argmax()
         if orig_pred_idx != new_pred_idx:
@@ -97,7 +97,6 @@ def targeted_attack(
     tensor: torch.Tensor,
     truth: torch.Tensor,
     target: torch.Tensor,
-    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
 ) -> ty.Optional[tuple[torch.Tensor, int, int]]:
@@ -109,7 +108,6 @@ def targeted_attack(
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
         target (torch.Tensor): Tensor representing targeted category.
-        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -128,9 +126,11 @@ def targeted_attack(
     truth_idx: int = truth.item()
 
     if orig_pred_idx != truth_idx:
-        raise ValueError(
-            f"Model prediction {orig_pred_idx} does not match true class {truth_idx}.",
-            f"It is therefore pointless to perform an attack.",
+        logger.warning(
+            (
+                f"Model prediction {orig_pred_idx} does not match true class {truth_idx}."
+                f"It is therefore pointless to perform an attack.",
+            )
         )
         return None
 
@@ -170,7 +170,6 @@ def get_attack_fn(
                 model,
                 tensor=tensor,
                 truth=truth,
-                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
@@ -185,7 +184,6 @@ def get_attack_fn(
                 tensor=tensor,
                 truth=truth,
                 target=target,
-                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
