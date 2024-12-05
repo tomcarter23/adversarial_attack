@@ -121,6 +121,12 @@ docker run -v /path/to/images:/app/images -v /path/to/output:/app/output tomcart
 
 The command mounts the `/path/to/images` directory to the `/app/images` directory in the container and the `/path/to/output` directory to the `/app/output` directory in the container. The command then runs the adversarial attack on the `goldfish.JPEG` image in the `/images` directory and saves the resulting adversarial image as `adversarial_goldfish.JPEG` in the `/output` directory.
 
+## Input Images for Testing
+
+The `sample_images/imagenet` directory contains a set of example images from the ILSCVR2012 Imagenet validation dataset which constitute part of the same dataset that the pre-trained models were trained on. 
+The images are named according to their true class label (e.g., `lawn_mower_ILSVRC2012_val_00020327.JPEG`), where the true class label is the part of the filename before the `ILSVRC2012` identifier. 
+True classes in each of the provided models do not contain underscores e.g. `lawn mower`. This format should be used if using these sample images for testing. These images are used in the following examples and tests.
+
 ## Running Two Examples via Make
 
 Possibly the simplest way to run some examples is through the `make` command. Two examples have been pre-prepared in the `Makefile` to demonstrate the use of the library. These are the `example_standard` and `example_targeted` commands.
@@ -136,13 +142,9 @@ and
 make example_targeted
 ```
 
-The commands will use the latest docker image of the library and run the standard and targeted attacks on the `lionfish_ILSVRC2012_val_00019791.JPEG` example image. Output images will be saved in the newly created `output` directory and information about the attack will be printed to the console.
+The commands will use the latest docker image of the library and run the standard and targeted attacks on the `lionfish_ILSVRC2012_val_00019791.JPEG` example image using the `resnet50` model. Output images will be saved in the `output_images` directory and information about the attack will be printed to the console.
 
-## Specific Example
-
-The `sample_images/imagenet` directory contains a set of example images from the ILSCVR2012 Imagenet validation dataset which constitute part of the same dataset that the pre-trained models were trained on. 
-The images are named according to their true class label (e.g., `lawn_mower_ILSVRC2012_val_00020327.JPEG`), where the true class label is the part of the filename before the `ILSVRC2012` identifier. 
-True classes in each of the provided models do not contain underscores e.g. `lawn mower`. This format should be used if using these sample images for testing.
+## Specific Example: Targeted Attack
 
 The following command demonstrates how to run a targeted adversarial attack on a ResNet50 model using the `hare` image from the `sample_images` directory. 
 The target category is `goldfish`, and the epsilon value is `1.0e-3` with a maximum of `50` iterations. The resulting adversarial image is saved as `output_images/hare_to_goldfish.jpg`.
