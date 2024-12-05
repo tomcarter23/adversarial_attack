@@ -2,12 +2,17 @@
 A library for conducting Adversarial Attacks on pytorch image classifier models.
 
 ## Overview
-Adversarial Attack is a Python library that provides a simple API and CLI for conducting adversarial attacks on PyTorch image classifier models. The library currently supports both standard and targeted attacks using the Fast Gradient Sign Method (FGSM) algorithm (https://arxiv.org/abs/1412.6572). 
+Adversarial Attack is a Python library that provides a simple API and CLI for conducting adversarial Fast Gradient Sign Method (FGSM) (https://arxiv.org/abs/1412.6572) attacks on PyTorch image classifier models.
 
+The paper demonstrates that it is possible to generate adversarial examples by adding small perturbations to the input image that are imperceptible to the human eye but can cause the model to misclassify the image.
+This is acomploshed by taking the gradient of the loss function with respect to the input image and then adding a small perturbation in the direction that increases the loss the most.
 
-Given a pre-trained PyTorch model and an input image, the library generates an adversarial image that is misclassified by the model but looks almost identical to the original image. 
+![alt text](FGSM_panda.png)
+The above image (taken from the FGSM paper) illstrates the result of an FGSM attack that has been able to trick the model into classifying a panda as a gibbon. 
 
-The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResNet50) and utility functions for loading images, preprocessing images. However users can also use their own models and images but must include their own preprocessing and loading steps (see *Running via API* section).
+The library implements the standard FGSM attack and a targeted FGSM attack. The standard attack aims to generate an adversarial image that is misclassified by the model, while the targeted attack aims to generate an adversarial image that is misclassified as a specific target category.
+
+The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResNet50) and utility functions for loading images, preprocessing images. However, users can also use their own models and images but must include their own preprocessing and loading steps (see *Running via API* section).
 
 ## Installation
 Adversarial Attack can be installed by first cloning the repository and the installing dependecies using pip. It is reccomended to use a virtual environment to install dependencies.
