@@ -14,6 +14,8 @@ The library implements the standard FGSM attack and a targeted FGSM attack. The 
 
 The library comes with a set of pre-trained PyTorch models (e.g., ResNet18, ResNet50) and utility functions for loading images, preprocessing images. However, users can also use their own models and images but must include their own preprocessing and loading steps (see *Running via API* section).
 
+We observe a success rate of 96.30% for the standard attack and a success rate of 89.63% for the targeted attack. Both attack mechanisms are tested on a set of sample images taken from the ILSVRC2012 validation dataset and using the models `resnet50`, `resnet101` and `resnet152`. See the section *End-to-End Tests* for more details. 
+
 ## Installation
 Adversarial Attack can be installed by first cloning the repository and the installing dependecies using pip. It is reccomended to use a virtual environment to install dependencies.
 
