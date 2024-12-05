@@ -42,7 +42,6 @@ def test_compute_gradient(model, inputs_and_targets):
 def test_standard_attack_success(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])
     truth = torch.tensor([0])
-    categories = ["cat1", "cat2", "cat3"]
     epsilon = 0.1
     max_iter = 50
 
@@ -50,21 +49,19 @@ def test_standard_attack_success(model):
         model=model,
         tensor=tensor,
         truth=truth,
-        categories=categories,
         epsilon=epsilon,
         max_iter=max_iter,
     )
 
     assert result is not None, "Attack should succeed."
     adv_tensor, orig_pred, new_pred = result
-    assert new_pred.item() != orig_pred.item(), "Attack should change the model prediction."
+    assert orig_pred != new_pred, "Attack should change the model prediction."
 
 
 def test_targeted_attack_success(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])
     truth = torch.tensor([0])
     target = torch.tensor([2])
-    categories = ["cat1", "cat2", "cat3"]
     epsilon = 0.1
     max_iter = 50
 
@@ -73,35 +70,32 @@ def test_targeted_attack_success(model):
         tensor=tensor,
         truth=truth,
         target=target,
-        categories=categories,
         epsilon=epsilon,
         max_iter=max_iter,
     )
 
     assert result is not None, "Attack should succeed."
     adv_tensor, orig_pred, new_pred = result
-    assert new_pred.item() == 2, "Attack should change the model prediction to target."
+    assert new_pred == 2, "Attack should change the model prediction to target."
 
 
 def test_standard_attack_failure(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])
     truth = torch.tensor([1])  # Intentionally mismatched target
-    categories = ["cat1", "cat2", "cat3"]
     epsilon = 0.1
     max_iter = 50
 
-    assert standard_attack(model=model, tensor=tensor, truth=truth, categories=categories, epsilon=epsilon, max_iter=max_iter) is None
+    assert standard_attack(model=model, tensor=tensor, truth=truth, epsilon=epsilon, max_iter=max_iter) is None
 
 
 def test_targeted_attack_failure(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])
     truth = torch.tensor([1])  # Intentionally mismatched target
     target = torch.tensor([2])
-    categories = ["cat1", "cat2", "cat3"]
     epsilon = 0.1
     max_iter = 50
 
-    assert targeted_attack(model=model, tensor=tensor, truth=truth, target=target, categories=categories, epsilon=epsilon, max_iter=max_iter) is None
+    assert targeted_attack(model=model, tensor=tensor, truth=truth, target=target, epsilon=epsilon, max_iter=max_iter) is None
 
 def test_standard_attack_no_change(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])
@@ -114,7 +108,6 @@ def test_standard_attack_no_change(model):
         model=model,
         tensor=tensor,
         truth=truth,
-        categories=categories,
         epsilon=epsilon,
         max_iter=max_iter,
     )
@@ -138,7 +131,6 @@ def test_targeted_attack_no_change(model):
         tensor=tensor,
         truth=truth,
         target=target,
-        categories=categories,
         epsilon=epsilon,
         max_iter=max_iter,
     )

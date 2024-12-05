@@ -37,10 +37,9 @@ def standard_attack(
     model: torch.nn.Module,
     tensor: torch.Tensor,
     truth: torch.Tensor,
-    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
-) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> ty.Optional[tuple[torch.Tensor, int, int]]:
     """
     Perform a classic FGSM attack on a PyTorch model with a given image tensor.
 
@@ -48,7 +47,6 @@ def standard_attack(
         model (torch.Model): PyTorch model to attack.
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
-        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -63,18 +61,20 @@ def standard_attack(
         f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
     )
 
-    if orig_pred.argmax().item() != truth.item():
-        logger.warning(
+    orig_pred_idx: int = orig_pred.argmax().item()
+    truth_idx: int = truth.item()
+
+    if orig_pred_idx != truth_idx:
+        warnings.warn(
             (
-                f"Model prediction `{categories[orig_pred.argmax().item()]}` does not match true class `{categories[truth.item()]}`."
-                f"It is therefore pointless to perform an attack. Not attacking."
+                f"Model prediction {orig_pred_idx} does not match true class {truth_idx}."
+                f"It is therefore pointless to perform an attack."
             ),
         )
         return None
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
-    orig_pred_idx = torch.tensor([orig_pred.argmax(dim=1).item()])
 
     for i in range(max_iter):
         logger.debug(f"Current output: {model(adv_tensor)}")
@@ -86,9 +86,10 @@ def standard_attack(
         logger.debug(
             f"attack iteration {i}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
         )
-        if orig_pred_idx.item() != new_pred:
-            logger.info(f"Standard attack successful.")
-            return adv_tensor, orig_pred.argmax(), new_pred
+        adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
+        new_pred_idx = model(adv_tensor).argmax()
+        if orig_pred_idx != new_pred_idx:
+            return adv_tensor, orig_pred_idx, new_pred_idx
 
     logger.warning(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
@@ -101,10 +102,9 @@ def targeted_attack(
     tensor: torch.Tensor,
     truth: torch.Tensor,
     target: torch.Tensor,
-    categories: list[str],
     epsilon: float = 1e-3,
     max_iter: int = 50,
-) -> ty.Optional[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+) -> ty.Optional[tuple[torch.Tensor, int, int]]:
     """
     Perform a targeted FGSM attack on a PyTorch model with a given image tensor.
 
@@ -113,7 +113,6 @@ def targeted_attack(
         tensor (torch.Tensor): Tensor to attack.
         truth (torch.Tensor): Tensor representing true category.
         target (torch.Tensor): Tensor representing targeted category.
-        categories (list[str]): List of categories for the model.
         epsilon (float): Maximum perturbation allowed.
         max_iter (int): Maximum number of iterations to perform.
 
@@ -128,12 +127,15 @@ def targeted_attack(
         f"Original prediction class: {orig_pred.argmax()}, probability: {torch.nn.functional.softmax(orig_pred, dim=1).max()}"
     )
 
-    if orig_pred.argmax().item() != truth.item():
+    orig_pred_idx: int = orig_pred.argmax().item()
+    truth_idx: int = truth.item()
+
+    if orig_pred_idx != truth_idx:
         logger.warning(
             (
-                f"Model prediction {orig_pred.argmax().item()} does not match true class {truth.item()}."
-                f"It is therefore pointless to perform an attack."
-            ),
+                f"Model prediction {orig_pred_idx} does not match true class {truth_idx}."
+                f"It is therefore pointless to perform an attack.",
+            )
         )
         return None
 
@@ -144,14 +146,9 @@ def targeted_attack(
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=target)
         adv_tensor = torch.clamp(adv_tensor - epsilon * grad.sign(), -2, 2)
-        new_output = model(adv_tensor)
-        new_pred = new_output.argmax()
-        logger.debug(
-            f"Attack iteration {i}, target: {target.item()}, current prediction: {new_pred.item()}, current max probability: {torch.nn.functional.softmax(new_output, dim=1).max()}"
-        )
-        if new_pred.item() == target.item():
-            logger.info(f"Targeted attack successful.")
-            return adv_tensor, orig_pred.argmax(), new_pred
+        new_pred_idx = model(adv_tensor).argmax().item()
+        if orig_pred_idx != new_pred_idx:
+            return adv_tensor, orig_pred_idx, new_pred_idx
 
     logger.warning(
         f"Failed to achieve target prediction of the model after {max_iter} tries.",
@@ -178,7 +175,6 @@ def get_attack_fn(
                 model,
                 tensor=tensor,
                 truth=truth,
-                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
@@ -193,7 +189,6 @@ def get_attack_fn(
                 tensor=tensor,
                 truth=truth,
                 target=target,
-                categories=categories,
                 epsilon=epsilon,
                 max_iter=max_iter,
             )
