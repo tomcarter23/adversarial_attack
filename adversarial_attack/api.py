@@ -1,9 +1,11 @@
-
 import typing as ty
+import logging
 
 import torch.nn
 from PIL import Image
 from .fgsm import get_attack_fn
+
+logger = logging.getLogger("adversarial_attack")
 
 
 def perform_attack(
@@ -48,11 +50,11 @@ def perform_attack(
 
     if results is not None:
         new_image, orig_pred, new_pred = results
-        print("Adversarial attack succeeded!")
-        print(f"Original Prediction: {categories[orig_pred.argmax().item()]}")
-        print(f"New Prediction: {categories[new_pred.item()]}")
+        logger.info("Adversarial attack succeeded!")
+        logger.info(f"Original Prediction: {categories[orig_pred.item()]}")
+        logger.info(f"New Prediction: {categories[new_pred.item()]}")
 
         return new_image
 
-    print("Adversarial attack failed.")
+    logger.info("Adversarial attack failed.")
     return None
