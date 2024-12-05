@@ -87,6 +87,29 @@ if result_image is not None:
     result_image.save('path/to/output.jpg')
 ```
 
+## Running CLI via Docker
+
+The library can also be run via Docker. To build the Docker image, run the following command:
+
+```bash
+docker build -t adversarial_attack .
+```
+
+The latest version of the library is available on Docker Hub. To pull the image, run the following command:
+
+```bash
+docker pull tomcarter23/adversarial_attack
+```
+
+To run the Docker container and CLI, use the following command as an example:
+
+```bash
+docker run -v /path/to/images:/app/images -v /path/to/output:/app/output tomcarter23/adversarial_attack python -m adversarial_attack --model resnet50 --mode targeted --image ./images/goldfish.JPEG --category-truth goldfish --category-target hare --epsilon 1.0e-3 --max-iterations 50 --output ./output/adversarial_goldfish.JPEG --log DEBUG
+
+```
+
+The command mounts the `/path/to/images` directory to the `/app/images` directory in the container and the `/path/to/output` directory to the `/app/output` directory in the container. The command then runs the adversarial attack on the `goldfish.JPEG` image in the `/images` directory and saves the resulting adversarial image as `adversarial_goldfish.JPEG` in the `/output` directory.
+
 ## Example
 
 The `sample_images/imagenet` directory contains a set of example images from the ILSCVR2012 Imagenet validation dataset which constitute part of the same dataset that the pre-trained models were trained on. 
