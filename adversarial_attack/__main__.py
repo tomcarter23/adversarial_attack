@@ -122,15 +122,15 @@ def main():
     )
 
     if out_image is None:
-        print("No adversarial generated. If output requested no image will be saved.")
+        logger.info("No adversarial generated. If output requested no image will be saved.")
         return None
 
     if args.output is not None:
-        print(f"Saving adversarial image to {args.output}")
+        logger.info(f"Saving adversarial image to {args.output}")
         Image.fromarray(np.uint8(255 * to_array(out_image))).save(args.output)
 
     else:
-        print("No output image to save.")
+        logger.info("No output image to save.")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,11 @@
-
 import typing as ty
+import logging
 
 import torch.nn
 from PIL import Image
 from .fgsm import get_attack_fn
+
+logger = logging.getLogger("adversarial_attack")
 
 
 def perform_attack(
@@ -54,5 +56,5 @@ def perform_attack(
 
         return new_image
 
-    print("Adversarial attack failed.")
+    logger.info("Adversarial attack failed.")
     return None

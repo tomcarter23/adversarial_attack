@@ -90,19 +90,18 @@ def test_standard_attack_failure(model):
     epsilon = 0.1
     max_iter = 50
 
-    with pytest.warns(RuntimeWarning):
-        assert (
-            standard_attack(
-                model=model,
-                tensor=tensor,
-                truth=truth,
-                categories=categories,
-                epsilon=epsilon,
-                max_iter=max_iter,
-            )
-            is None
-        )
+    assert standard_attack(model=model, tensor=tensor, truth=truth, categories=categories, epsilon=epsilon, max_iter=max_iter) is None
 
+
+def test_targeted_attack_failure(model):
+    tensor = torch.tensor([[1.0, 0.0, 0.5]])
+    truth = torch.tensor([1])  # Intentionally mismatched target
+    target = torch.tensor([2])
+    categories = ["cat1", "cat2", "cat3"]
+    epsilon = 0.1
+    max_iter = 50
+
+    assert targeted_attack(model=model, tensor=tensor, truth=truth, target=target, categories=categories, epsilon=epsilon, max_iter=max_iter) is None
 
 def test_standard_attack_no_change(model):
     tensor = torch.tensor([[1.0, 0.0, 0.5]])

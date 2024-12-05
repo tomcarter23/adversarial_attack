@@ -72,7 +72,6 @@ def standard_attack(
                 f"Model prediction {orig_pred_idx} does not match true class {truth_idx}."
                 f"It is therefore pointless to perform an attack."
             ),
-            RuntimeWarning,
         )
         return None
 
@@ -80,7 +79,6 @@ def standard_attack(
     adv_tensor = tensor.clone().detach()
 
     for i in range(max_iter):
-        logger.debug(f"Current output: {model(adv_tensor)}")
         model.zero_grad()
         grad = compute_gradient(model=model, input=adv_tensor, target=torch.tensor([orig_pred_idx]))
         adv_tensor = torch.clamp(adv_tensor + epsilon * grad.sign(), -2, 2)
@@ -88,9 +86,8 @@ def standard_attack(
         if orig_pred_idx != new_pred_idx:
             return adv_tensor, orig_pred_idx, new_pred_idx
 
-    warnings.warn(
+    logger.warning(
         f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
     )
     return None
 
@@ -135,6 +132,7 @@ def targeted_attack(
             f"Model prediction {orig_pred_idx} does not match true class {truth_idx}.",
             f"It is therefore pointless to perform an attack.",
         )
+        return None
 
     # make a copy of the input tensor
     adv_tensor = tensor.clone().detach()
@@ -147,9 +145,8 @@ def targeted_attack(
         if orig_pred_idx != new_pred_idx:
             return adv_tensor, orig_pred_idx, new_pred_idx
 
-    warnings.warn(
-        f"Failed to alter the prediction of the model after {max_iter} tries.",
-        RuntimeWarning,
+    logger.warning(
+        f"Failed to achieve target prediction of the model after {max_iter} tries.",
     )
     return None
 
