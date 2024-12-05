@@ -8,7 +8,7 @@ The paper demonstrates that it is possible to generate adversarial examples by a
 This is acomploshed by taking the gradient of the loss function with respect to the input image and then adding a small perturbation in the direction that increases the loss the most.
 
 ![alt text](FGSM_panda.png)
-The above image (taken from the FGSM paper) illstrates the result of an FGSM attack that has been able to trick the model into classifying a panda as a gibbon. 
+The above image (taken from the FGSM paper) illstrates the result of an FGSM attack that has been able to trick the model into classifying a panda as a gibbon. To the human there is no discernable difference between the two images.
 
 The library implements the standard FGSM attack and a targeted FGSM attack. The standard attack aims to generate an adversarial image that is misclassified by the model, while the targeted attack aims to generate an adversarial image that is misclassified as a specific target category.
 
