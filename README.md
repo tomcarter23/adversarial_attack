@@ -59,7 +59,7 @@ python -m adversarial_attack --model <MODEL_NAME> --mode <MODE> --image <IMAGE_P
 - `--log, -l`: Log level (e.g., `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`) (optional).
 
 
-## Running via API
+## Running via SDK
 You can also use the library via the provided API to perform adversarial attacks programmatically on any PyTorch model.
 
 Example usage:
